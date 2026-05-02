@@ -7,6 +7,8 @@ Current package:
 - `@dreamplay/analytics` - browser-side event tracker and shared analytics helpers
   - includes Supabase Option B setup SQL at
     `packages/analytics/supabase/001_business_analytics_schemas.sql`
+  - includes shared visit classification for scanner-likely vs human-likely
+    email-attributed visits
 
 ## Install From GitHub
 

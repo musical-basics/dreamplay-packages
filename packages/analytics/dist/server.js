@@ -1,4 +1,5 @@
 import { ANALYTICS_SCHEMA_BY_BUSINESS, analyticsSchemaForBusiness, parseBusinessAnalyticsEvent, } from "./schema.js";
+export { VISIT_CLASSIFICATION_REASON_LABELS, classifyVisit, describeVisitClassificationReason, normalizeVisitEvents, } from "./classification.js";
 export function parseTrackBody(input) {
     return parseBusinessAnalyticsEvent(input);
 }

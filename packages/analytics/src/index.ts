@@ -9,6 +9,20 @@ export {
 } from "./client.js";
 
 export {
+  VISIT_CLASSIFICATION_REASON_LABELS,
+  classifyVisit,
+  describeVisitClassificationReason,
+  normalizeVisitEvents,
+  type NormalizedVisitEvent,
+  type VisitClassification,
+  type VisitClassificationEvent,
+  type VisitClassificationOptions,
+  type VisitClassificationReason,
+  type VisitClassificationResult,
+  type VisitClassificationStats,
+} from "./classification.js";
+
+export {
   ANALYTICS_SCHEMA_BY_BUSINESS,
   ATTRIBUTION_KEYS,
   analyticsSchemaForBusiness,

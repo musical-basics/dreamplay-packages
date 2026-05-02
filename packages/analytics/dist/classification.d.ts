@@ -1,0 +1,81 @@
+import { type AnalyticsEventName } from "./schema.js";
+export type VisitClassification = "human_confirmed" | "human_likely" | "scanner_likely" | "bot_likely" | "unknown";
+export type VisitClassificationReason = "email_attribution_present" | "known_bot_user_agent" | "known_security_scanner_user_agent" | "literal_ampersand_query" | "multiple_email_links_same_second" | "cross_domain_email_links" | "rapid_pageview_burst" | "mostly_zero_duration_pages" | "only_passive_events" | "checkout_or_purchase_event" | "lead_or_form_event" | "human_interaction_event" | "meaningful_time_on_page" | "realistic_multi_page_timing";
+export type VisitClassificationEvent = {
+    event_name?: AnalyticsEventName | string | null;
+    eventName?: AnalyticsEventName | string | null;
+    path?: string | null;
+    created_at?: string | number | Date | null;
+    createdAt?: string | number | Date | null;
+    timestamp?: string | number | Date | null;
+    session_id?: string | null;
+    sessionId?: string | null;
+    anonymous_id?: string | null;
+    anonymousId?: string | null;
+    user_agent?: string | null;
+    userAgent?: string | null;
+    metadata?: Record<string, unknown> | null;
+};
+export type NormalizedVisitEvent = {
+    eventName: string;
+    path: string;
+    createdAtMs?: number;
+    host?: string;
+    sid?: string;
+    cid?: string;
+    durationSeconds?: number;
+    userAgent?: string;
+    metadata: Record<string, unknown>;
+};
+export type VisitClassificationOptions = {
+    burstWindowMs?: number;
+    crossDomainWindowMs?: number;
+    meaningfulDurationSeconds?: number;
+    totalMeaningfulDurationSeconds?: number;
+    zeroDurationSeconds?: number;
+    humanEventNames?: string[];
+    confirmedHumanEventNames?: string[];
+};
+export type VisitClassificationStats = {
+    eventCount: number;
+    pageviewCount: number;
+    emailAttributedEventCount: number;
+    uniquePathCount: number;
+    uniqueHostCount: number;
+    totalDurationSeconds: number;
+    firstSeenAt?: string;
+    lastSeenAt?: string;
+};
+export type VisitClassificationResult = {
+    classification: VisitClassification;
+    emailAttributed: boolean;
+    scannerLikely: boolean;
+    botLikely: boolean;
+    humanLikely: boolean;
+    humanConfirmed: boolean;
+    confidence: number;
+    scannerScore: number;
+    humanScore: number;
+    reasons: VisitClassificationReason[];
+    stats: VisitClassificationStats;
+};
+export declare const VISIT_CLASSIFICATION_REASON_LABELS: {
+    readonly email_attribution_present: "URL/session contains email attribution";
+    readonly known_bot_user_agent: "User agent looks like automation";
+    readonly known_security_scanner_user_agent: "User agent looks like a security scanner";
+    readonly literal_ampersand_query: "URL contains literal &amp; query separators";
+    readonly multiple_email_links_same_second: "Multiple email links landed in the same second";
+    readonly cross_domain_email_links: "Email-attributed links landed across multiple domains";
+    readonly rapid_pageview_burst: "Several pageviews landed in a very short burst";
+    readonly mostly_zero_duration_pages: "Most page durations are zero or near-zero";
+    readonly only_passive_events: "Only passive pageview/page-leave events were seen";
+    readonly checkout_or_purchase_event: "Checkout or purchase event was seen";
+    readonly lead_or_form_event: "Lead or form event was seen";
+    readonly human_interaction_event: "Human interaction event was seen";
+    readonly meaningful_time_on_page: "Visit spent meaningful time on page";
+    readonly realistic_multi_page_timing: "Multiple pages were visited with human-like timing";
+};
+export declare function describeVisitClassificationReason(reason: VisitClassificationReason): string;
+export declare function normalizeVisitEvents(events: VisitClassificationEvent[]): NormalizedVisitEvent[];
+export declare function classifyVisit(events: VisitClassificationEvent[], options?: VisitClassificationOptions): VisitClassificationResult;
+//# sourceMappingURL=classification.d.ts.map

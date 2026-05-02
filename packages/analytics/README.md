@@ -81,6 +81,36 @@ if (!schema) {
 The server should enrich `metadata.email` from `metadata.sid`; the browser
 package never exposes subscriber emails client-side.
 
+## Visit Classification
+
+Dashboards can use the shared classifier to label email-attributed pageviews
+consistently across businesses.
+
+```ts
+import { classifyVisit } from "@dreamplay/analytics/classification";
+
+const result = classifyVisit(events);
+
+result.classification;
+// "scanner_likely" | "bot_likely" | "human_likely" | "human_confirmed" | "unknown"
+
+result.reasons;
+// ["multiple_email_links_same_second", "literal_ampersand_query", ...]
+```
+
+Typical dashboard interpretation:
+
+```text
+emailAttributed: true
+scannerLikely: true
+humanConfirmed: false
+```
+
+means the visit should count as an email-attributed landed pageview, but not as a
+confirmed human visit. This is useful for direct `sid/cid` tracking because
+security scanners can load links without a real reader intentionally visiting
+the page.
+
 ## Supabase Setup
 
 Use Option B: one Supabase project with separate schemas for each business.

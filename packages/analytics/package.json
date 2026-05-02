@@ -15,6 +15,10 @@
       "types": "./dist/client.d.ts",
       "import": "./dist/client.js"
     },
+    "./classification": {
+      "types": "./dist/classification.d.ts",
+      "import": "./dist/classification.js"
+    },
     "./schema": {
       "types": "./dist/schema.d.ts",
       "import": "./dist/schema.js"
