@@ -136,8 +136,8 @@ Create API routes that point at the business schema:
 import { createAnalyticsDashboardStatsHandler } from "@dreamplay/analytics/dashboard-server";
 
 export const GET = createAnalyticsDashboardStatsHandler({
-  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  supabaseUrl: process.env.ANALYTICS_SUPABASE_URL!,
+  supabaseServiceRoleKey: process.env.ANALYTICS_SUPABASE_SERVICE_ROLE_KEY!,
   business: "concert",
 });
 ```
