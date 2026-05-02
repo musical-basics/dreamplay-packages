@@ -111,6 +111,44 @@ confirmed human visit. This is useful for direct `sid/cid` tracking because
 security scanners can load links without a real reader intentionally visiting
 the page.
 
+## Dashboard UI
+
+The package includes a reusable dashboard shell that visually matches the
+current DreamPlay Analytics app.
+
+```tsx
+import { AnalyticsDashboard } from "@dreamplay/analytics/dashboard";
+
+export default function AnalyticsPage() {
+  return (
+    <AnalyticsDashboard
+      accentLabel="Concert"
+      title="Analytics"
+      apiBasePath="/api/analytics"
+    />
+  );
+}
+```
+
+Create API routes that point at the business schema:
+
+```ts
+import { createAnalyticsDashboardStatsHandler } from "@dreamplay/analytics/dashboard-server";
+
+export const GET = createAnalyticsDashboardStatsHandler({
+  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  business: "concert",
+});
+```
+
+Use the same pattern for:
+
+```ts
+createAnalyticsDashboardVisitorHistoryHandler(...)
+createAnalyticsDashboardEmailVisitorsHandler(...)
+```
+
 ## Supabase Setup
 
 Use Option B: one Supabase project with separate schemas for each business.

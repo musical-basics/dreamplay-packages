@@ -19,6 +19,14 @@
       "types": "./dist/classification.d.ts",
       "import": "./dist/classification.js"
     },
+    "./dashboard": {
+      "types": "./dist/dashboard.d.ts",
+      "import": "./dist/dashboard.js"
+    },
+    "./dashboard-server": {
+      "types": "./dist/dashboard-server.d.ts",
+      "import": "./dist/dashboard-server.js"
+    },
     "./schema": {
       "types": "./dist/schema.d.ts",
       "import": "./dist/schema.js"
@@ -33,7 +41,16 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.95.2",
+    "lucide-react": "^1.14.0"
+  },
+  "peerDependencies": {
+    "react": ">=18 <20",
+    "react-dom": ">=18 <20"
+  },
   "devDependencies": {
+    "@types/react": "^19.2.14",
     "typescript": "^5.9.3"
   }
 }

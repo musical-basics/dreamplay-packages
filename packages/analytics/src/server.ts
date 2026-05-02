@@ -18,6 +18,28 @@ export {
   type VisitClassificationResult,
   type VisitClassificationStats,
 } from "./classification.js";
+export {
+  createAnalyticsDashboardEmailVisitorsHandler,
+  createAnalyticsDashboardStatsHandler,
+  createAnalyticsDashboardVisitorHistoryHandler,
+  createDashboardSupabaseClient,
+  getAnalyticsDashboardData,
+  getAnalyticsEmailVisitors,
+  getAnalyticsVisitorHistory,
+  type AnalyticsDashboardServerOptions,
+} from "./dashboard-server.js";
+export type {
+  AnalyticsAbResult,
+  AnalyticsChartPoint,
+  AnalyticsDashboardData,
+  AnalyticsDashboardRange,
+  AnalyticsDashboardTab,
+  AnalyticsEmailVisitorData,
+  AnalyticsEventRow,
+  AnalyticsVisitorHistory,
+  AnalyticsVisitorHistoryVisit,
+  AnalyticsVisitorSummary,
+} from "./dashboard-types.js";
 
 export type HeaderReader = {
   get(name: string): string | null;

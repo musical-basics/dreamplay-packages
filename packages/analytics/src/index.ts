@@ -23,6 +23,25 @@ export {
 } from "./classification.js";
 
 export {
+  AnalyticsDashboard,
+  default as AnalyticsDashboardDefault,
+  type AnalyticsDashboardProps,
+} from "./dashboard.js";
+
+export type {
+  AnalyticsAbResult,
+  AnalyticsChartPoint,
+  AnalyticsDashboardData,
+  AnalyticsDashboardRange,
+  AnalyticsDashboardTab,
+  AnalyticsEmailVisitorData,
+  AnalyticsEventRow,
+  AnalyticsVisitorHistory,
+  AnalyticsVisitorHistoryVisit,
+  AnalyticsVisitorSummary,
+} from "./dashboard-types.js";
+
+export {
   ANALYTICS_SCHEMA_BY_BUSINESS,
   ATTRIBUTION_KEYS,
   analyticsSchemaForBusiness,

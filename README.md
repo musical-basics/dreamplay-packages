@@ -9,6 +9,7 @@ Current package:
     `packages/analytics/supabase/001_business_analytics_schemas.sql`
   - includes shared visit classification for scanner-likely vs human-likely
     email-attributed visits
+  - includes a reusable dashboard UI and dashboard API route helpers
 
 ## Install From GitHub
 
