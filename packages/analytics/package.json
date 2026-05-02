@@ -35,6 +35,10 @@
       "types": "./dist/server.d.ts",
       "import": "./dist/server.js"
     },
+    "./track-server": {
+      "types": "./dist/track-server.d.ts",
+      "import": "./dist/track-server.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {

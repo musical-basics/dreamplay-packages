@@ -63,6 +63,7 @@ analytics.installPageLifecycleTracking({ trackPageview: true });
 
 ```ts
 import {
+  createBusinessAnalyticsTrackHandler,
   analyticsSchemaForBusiness,
   parseBusinessAnalyticsEvent,
 } from "@dreamplay/analytics/server";
@@ -80,6 +81,25 @@ if (!schema) {
 
 The server should enrich `metadata.email` from `metadata.sid`; the browser
 package never exposes subscriber emails client-side.
+
+For a business-owned ingestion route, use the package handler instead of sending
+traffic to the old central DreamPlay analytics app:
+
+```ts
+import {
+  createBusinessAnalyticsTrackHandler,
+  createBusinessAnalyticsTrackOptionsHandler,
+} from "@dreamplay/analytics/track-server";
+
+const options = {
+  supabaseUrl: process.env.ANALYTICS_SUPABASE_URL!,
+  supabaseServiceRoleKey: process.env.ANALYTICS_SUPABASE_SERVICE_ROLE_KEY!,
+  business: "concert",
+} as const;
+
+export const POST = createBusinessAnalyticsTrackHandler(options);
+export const OPTIONS = createBusinessAnalyticsTrackOptionsHandler(options);
+```
 
 ## Visit Classification
 

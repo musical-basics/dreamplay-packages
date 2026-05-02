@@ -19,6 +19,11 @@ export {
   type VisitClassificationStats,
 } from "./classification.js";
 export {
+  createBusinessAnalyticsTrackHandler,
+  createBusinessAnalyticsTrackOptionsHandler,
+  type BusinessAnalyticsTrackHandlerOptions,
+} from "./track-server.js";
+export {
   createAnalyticsDashboardEmailVisitorsHandler,
   createAnalyticsDashboardStatsHandler,
   createAnalyticsDashboardVisitorHistoryHandler,
