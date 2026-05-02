@@ -7,6 +7,30 @@ This package intentionally does not use click redirects. Email attribution is
 captured from direct destination links containing `sid` and `cid`, then sent to
 the configured business analytics endpoint.
 
+## Installation
+
+Install from the package subdirectory in GitHub:
+
+```bash
+pnpm add "github:musical-basics/dreamplay-packages#path:/packages/analytics"
+```
+
+This saves the dependency as:
+
+```json
+{
+  "dependencies": {
+    "@dreamplay/analytics": "github:musical-basics/dreamplay-packages#path:/packages/analytics"
+  }
+}
+```
+
+If the GitHub repo is private and the HTTPS shorthand has auth trouble, use SSH:
+
+```bash
+pnpm add "git+ssh://git@github.com:musical-basics/dreamplay-packages.git#path:/packages/analytics"
+```
+
 ## Browser Usage
 
 ```ts
