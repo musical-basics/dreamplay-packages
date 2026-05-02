@@ -32,13 +32,50 @@ analytics.installPageLifecycleTracking({ trackPageview: true });
 ## Server Usage
 
 ```ts
-import { parseBusinessAnalyticsEvent } from "@dreamplay/analytics/server";
+import {
+  analyticsSchemaForBusiness,
+  parseBusinessAnalyticsEvent,
+} from "@dreamplay/analytics/server";
 
 const parsed = parseBusinessAnalyticsEvent(await request.json());
 if (!parsed.ok) {
   return Response.json({ errors: parsed.errors }, { status: 400 });
 }
+
+const schema = analyticsSchemaForBusiness(parsed.event.metadata.business);
+if (!schema) {
+  return Response.json({ error: "Unknown analytics business" }, { status: 400 });
+}
 ```
 
 The server should enrich `metadata.email` from `metadata.sid`; the browser
 package never exposes subscriber emails client-side.
+
+## Supabase Setup
+
+Use Option B: one Supabase project with separate schemas for each business.
+
+```text
+dreamplay_analytics.analytics_logs
+musicalbasics_analytics.analytics_logs
+concert_analytics.analytics_logs
+```
+
+Run this migration in the Supabase SQL editor:
+
+```text
+packages/analytics/supabase/001_business_analytics_schemas.sql
+```
+
+If your ingestion route writes through `@supabase/supabase-js`, add these schemas
+to Supabase Project Settings -> API -> Exposed schemas:
+
+```text
+dreamplay_analytics
+musicalbasics_analytics
+concert_analytics
+```
+
+The migration grants table access to `service_role` only. Keep Supabase
+service-role keys in server routes and environment variables; never put them in
+client components.

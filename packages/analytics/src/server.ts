@@ -1,4 +1,6 @@
 import {
+  ANALYTICS_SCHEMA_BY_BUSINESS,
+  analyticsSchemaForBusiness,
   parseBusinessAnalyticsEvent,
   type BusinessAnalyticsEvent,
   type ParseAnalyticsEventResult,
@@ -21,6 +23,7 @@ export function parseTrackBody(input: unknown): ParseAnalyticsEventResult {
 }
 
 export { parseBusinessAnalyticsEvent };
+export { ANALYTICS_SCHEMA_BY_BUSINESS, analyticsSchemaForBusiness };
 export type { BusinessAnalyticsEvent, ParseAnalyticsEventResult };
 
 export function resolveClientIp(headers: HeaderReader): string {

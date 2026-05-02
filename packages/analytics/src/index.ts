@@ -9,12 +9,16 @@ export {
 } from "./client.js";
 
 export {
+  ANALYTICS_SCHEMA_BY_BUSINESS,
   ATTRIBUTION_KEYS,
+  analyticsSchemaForBusiness,
   asFiniteNumber,
   asString,
+  isKnownBusiness,
   isRecord,
   parseBusinessAnalyticsEvent,
   pickAttribution,
+  type AnalyticsSchemaName,
   type AnalyticsEventName,
   type AttributionKey,
   type AttributionMetadata,

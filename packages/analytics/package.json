@@ -5,7 +5,7 @@
   "description": "Business-isolated analytics tracker and shared analytics helpers for DreamPlay repos.",
   "type": "module",
   "sideEffects": false,
-  "files": ["dist"],
+  "files": ["dist", "supabase", "README.md"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

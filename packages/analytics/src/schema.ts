@@ -1,6 +1,15 @@
 export type KnownBusiness = "dreamplay" | "musicalbasics" | "concert";
 export type Business = KnownBusiness | (string & {});
 
+export const ANALYTICS_SCHEMA_BY_BUSINESS = {
+  dreamplay: "dreamplay_analytics",
+  musicalbasics: "musicalbasics_analytics",
+  concert: "concert_analytics",
+} as const satisfies Record<KnownBusiness, string>;
+
+export type AnalyticsSchemaName =
+  (typeof ANALYTICS_SCHEMA_BY_BUSINESS)[keyof typeof ANALYTICS_SCHEMA_BY_BUSINESS];
+
 export type KnownAnalyticsEventName =
   | "pageview"
   | "page_leave"
@@ -74,6 +83,14 @@ export type AttributionMetadata = Partial<Record<AttributionKey, string>>;
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function isKnownBusiness(value: string): value is KnownBusiness {
+  return Object.hasOwn(ANALYTICS_SCHEMA_BY_BUSINESS, value);
+}
+
+export function analyticsSchemaForBusiness(business: Business): AnalyticsSchemaName | undefined {
+  return isKnownBusiness(business) ? ANALYTICS_SCHEMA_BY_BUSINESS[business] : undefined;
 }
 
 export function asString(value: unknown): string | undefined {
