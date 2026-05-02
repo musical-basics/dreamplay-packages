@@ -25,6 +25,12 @@ import { createBusinessAnalytics } from "@dreamplay/analytics/client";
 The analytics package commits its built `dist/` output so Git installs do not
 need to run package build scripts.
 
+To pull a newer commit into a business repo later:
+
+```bash
+pnpm update @dreamplay/analytics
+```
+
 Planned packages:
 
 - `@dreamplay/email`

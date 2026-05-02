@@ -31,6 +31,12 @@ If the GitHub repo is private and the HTTPS shorthand has auth trouble, use SSH:
 pnpm add "git+ssh://git@github.com:musical-basics/dreamplay-packages.git#path:/packages/analytics"
 ```
 
+When this package changes, pull the latest committed build into a business repo:
+
+```bash
+pnpm update @dreamplay/analytics
+```
+
 ## Browser Usage
 
 ```ts
