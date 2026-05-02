@@ -22,8 +22,8 @@ Then import it normally:
 import { createBusinessAnalytics } from "@dreamplay/analytics/client";
 ```
 
-The package has a `prepare` script, so Git installs build `dist/` during
-installation.
+The analytics package commits its built `dist/` output so Git installs do not
+need to run package build scripts.
 
 Planned packages:
 

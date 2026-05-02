@@ -1,5 +1,7 @@
 node_modules
 dist
 packages/*/dist
+!packages/analytics/dist/
+!packages/analytics/dist/**
 .DS_Store
 *.tsbuildinfo
