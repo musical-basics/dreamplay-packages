@@ -3,5 +3,7 @@ dist
 packages/*/dist
 !packages/analytics/dist/
 !packages/analytics/dist/**
+!packages/emailer/dist/
+!packages/emailer/dist/**
 .DS_Store
 *.tsbuildinfo
