@@ -1,6 +1,7 @@
 import { ATTRIBUTION_KEYS, } from "./schema.js";
 const DEFAULT_TRACKER_VERSION = "0.1.0";
 const DEFAULT_STORAGE_PREFIX = "dreamplay_analytics";
+const DEFAULT_ENDPOINT = "/api/track";
 function browserWindow() {
     return typeof window === "undefined" ? undefined : window;
 }
@@ -92,7 +93,8 @@ function hasKeys(value) {
     return Object.keys(value).length > 0;
 }
 function endpointFromConfig(endpoint) {
-    return endpoint.trim();
+    const configured = endpoint?.trim();
+    return configured && configured.length > 0 ? configured : DEFAULT_ENDPOINT;
 }
 function currentHost() {
     return browserWindow()?.location.host || "unknown";
@@ -115,9 +117,6 @@ export function createBusinessAnalytics(config) {
     const attributionKey = `${storagePrefix}:attribution`;
     const sessionIdKey = `${storagePrefix}:session_id`;
     const anonymousIdKey = `${storagePrefix}:anonymous_id`;
-    if (!endpoint) {
-        throw new Error("createBusinessAnalytics requires a non-empty endpoint");
-    }
     function getSessionId() {
         const storage = sessionStorageSafe();
         const existing = readString(storage, sessionIdKey);

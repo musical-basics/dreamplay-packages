@@ -9,7 +9,7 @@ import {
 
 export type BusinessAnalyticsConfig = {
   business: Business;
-  endpoint: string;
+  endpoint?: string;
   brand?: string;
   offer?: string;
   sourceRepo?: string;
@@ -66,6 +66,7 @@ export type BusinessAnalyticsClient = {
 
 const DEFAULT_TRACKER_VERSION = "0.1.0";
 const DEFAULT_STORAGE_PREFIX = "dreamplay_analytics";
+const DEFAULT_ENDPOINT = "/api/track";
 
 function browserWindow(): Window | undefined {
   return typeof window === "undefined" ? undefined : window;
@@ -155,8 +156,9 @@ function hasKeys(value: Record<string, unknown>): boolean {
   return Object.keys(value).length > 0;
 }
 
-function endpointFromConfig(endpoint: string): string {
-  return endpoint.trim();
+function endpointFromConfig(endpoint?: string): string {
+  const configured = endpoint?.trim();
+  return configured && configured.length > 0 ? configured : DEFAULT_ENDPOINT;
 }
 
 function currentHost(): string {
@@ -182,10 +184,6 @@ export function createBusinessAnalytics(config: BusinessAnalyticsConfig): Busine
   const attributionKey = `${storagePrefix}:attribution`;
   const sessionIdKey = `${storagePrefix}:session_id`;
   const anonymousIdKey = `${storagePrefix}:anonymous_id`;
-
-  if (!endpoint) {
-    throw new Error("createBusinessAnalytics requires a non-empty endpoint");
-  }
 
   function getSessionId(): string {
     const storage = sessionStorageSafe();

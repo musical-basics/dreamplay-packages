@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { classifyVisit } from "./classification.js";
 import { analyticsSchemaForBusiness, asString } from "./schema.js";
+import { createAnalyticsSchemaExposureChecker, isAnalyticsSchemaNotExposedError, } from "./schema-check.js";
 const NO_CACHE_HEADERS = {
     "Cache-Control": "no-store, no-cache, max-age=0, must-revalidate",
     "CDN-Cache-Control": "no-store",
@@ -9,21 +10,24 @@ const NO_CACHE_HEADERS = {
     Expires: "0",
 };
 export function createAnalyticsDashboardStatsHandler(options) {
+    const ensureSchemaExposed = createDashboardSchemaExposureChecker(options);
     return async function GET(request) {
         try {
+            await ensureDashboardSchemaExposed(ensureSchemaExposed, options);
             const params = parseDashboardQuery(request);
             const data = await getAnalyticsDashboardData(options, params);
             return json(data);
         }
         catch (error) {
-            console.error("[Analytics Dashboard] stats error:", error);
-            return json({ error: "Failed to fetch analytics stats" }, 500);
+            return dashboardErrorResponse("stats", "Failed to fetch analytics stats", error);
         }
     };
 }
 export function createAnalyticsDashboardVisitorHistoryHandler(options) {
+    const ensureSchemaExposed = createDashboardSchemaExposureChecker(options);
     return async function GET(request) {
         try {
+            await ensureDashboardSchemaExposed(ensureSchemaExposed, options);
             const url = new URL(request.url);
             const ip = url.searchParams.get("ip");
             const visitorKey = url.searchParams.get("visitor_key");
@@ -40,21 +44,21 @@ export function createAnalyticsDashboardVisitorHistoryHandler(options) {
             return json(history);
         }
         catch (error) {
-            console.error("[Analytics Dashboard] visitor history error:", error);
-            return json({ error: "Failed to fetch visitor history" }, 500);
+            return dashboardErrorResponse("visitor history", "Failed to fetch visitor history", error);
         }
     };
 }
 export function createAnalyticsDashboardEmailVisitorsHandler(options) {
+    const ensureSchemaExposed = createDashboardSchemaExposureChecker(options);
     return async function GET(request) {
         try {
+            await ensureDashboardSchemaExposed(ensureSchemaExposed, options);
             const params = parseDashboardQuery(request);
             const data = await getAnalyticsEmailVisitors(options, params);
             return json(data);
         }
         catch (error) {
-            console.error("[Analytics Dashboard] email visitors error:", error);
-            return json({ error: "Failed to fetch email visitors" }, 500);
+            return dashboardErrorResponse("email visitors", "Failed to fetch email visitors", error);
         }
     };
 }
@@ -223,7 +227,7 @@ function parseDashboardQuery(request) {
     return {
         range,
         excludeAdmin: searchParams.get("exclude_admin") !== "false",
-        excludeBots: searchParams.get("exclude_bots") !== "false",
+        excludeBots: (searchParams.get("exclude_bots") ?? searchParams.get("excludeBots")) !== "false",
         visitorLimit,
     };
 }
@@ -413,5 +417,29 @@ function json(data, status = 200) {
         status,
         headers: NO_CACHE_HEADERS,
     });
+}
+function createDashboardSchemaExposureChecker(options) {
+    const schema = analyticsSchema(options);
+    if (!schema)
+        return undefined;
+    return createAnalyticsSchemaExposureChecker({
+        schema,
+        tableName: options.tableName,
+        supabaseUrl: options.supabaseUrl,
+    });
+}
+async function ensureDashboardSchemaExposed(ensureSchemaExposed, options) {
+    if (!ensureSchemaExposed)
+        return;
+    const supabase = createDashboardSupabaseClient(options);
+    await ensureSchemaExposed(supabase);
+}
+function dashboardErrorResponse(label, fallbackMessage, error) {
+    if (isAnalyticsSchemaNotExposedError(error)) {
+        console.error(error.message);
+        return json({ error: "analytics schema not exposed", fix: error.fix }, 503);
+    }
+    console.error(`[Analytics Dashboard] ${label} error:`, error);
+    return json({ error: fallbackMessage }, 500);
 }
 //# sourceMappingURL=dashboard-server.js.map

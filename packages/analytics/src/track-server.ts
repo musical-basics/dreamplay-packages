@@ -5,6 +5,11 @@ import {
   type Business,
   type BusinessAnalyticsEvent,
 } from "./schema.js";
+import {
+  createAnalyticsSchemaExposureChecker,
+  isAnalyticsSchemaNotExposedError,
+  type SchemaExposureCheckClient,
+} from "./schema-check.js";
 
 export type CorsOptions = {
   allowedOrigins: string[];
@@ -30,6 +35,15 @@ export type BusinessAnalyticsTrackHandlerOptions = {
 export function createBusinessAnalyticsTrackHandler(
   options: BusinessAnalyticsTrackHandlerOptions
 ) {
+  const schema = options.schema ?? analyticsSchemaForBusiness(options.business);
+  const ensureSchemaExposed = schema
+    ? createAnalyticsSchemaExposureChecker({
+        schema,
+        tableName: options.tableName,
+        supabaseUrl: options.supabaseUrl,
+      })
+    : undefined;
+
   return async function POST(request: Request): Promise<Response> {
     const headers = trackCorsHeaders(request, options);
     const userAgent = request.headers.get("user-agent");
@@ -62,16 +76,29 @@ export function createBusinessAnalyticsTrackHandler(
       );
     }
 
-    const schema = options.schema ?? analyticsSchemaForBusiness(options.business);
     if (!schema) {
       return Response.json({ error: "Unknown analytics business schema" }, { status: 400, headers });
     }
 
-    const metadata = await enrichMetadataFromSubscriberId(event, options);
     const supabase = createClient(options.supabaseUrl, options.supabaseServiceRoleKey, {
       auth: { persistSession: false },
     });
 
+    try {
+      await ensureSchemaExposed?.(supabase as unknown as SchemaExposureCheckClient);
+    } catch (error) {
+      if (isAnalyticsSchemaNotExposedError(error)) {
+        console.error(error.message);
+        return Response.json(
+          { error: "analytics schema not exposed", fix: error.fix },
+          { status: 503, headers }
+        );
+      }
+      console.error("[Analytics Track] schema check error:", error);
+      return Response.json({ error: "Failed to check analytics schema" }, { status: 500, headers });
+    }
+
+    const metadata = await enrichMetadataFromSubscriberId(event, options);
     const { error } = await supabase
       .schema(schema)
       .from(options.tableName ?? "analytics_logs")

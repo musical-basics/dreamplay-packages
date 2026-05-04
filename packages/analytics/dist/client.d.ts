@@ -1,7 +1,7 @@
 import { type AnalyticsEventName, type AttributionMetadata, type Business, type BusinessAnalyticsEvent, type JsonObject } from "./schema.js";
 export type BusinessAnalyticsConfig = {
     business: Business;
-    endpoint: string;
+    endpoint?: string;
     brand?: string;
     offer?: string;
     sourceRepo?: string;

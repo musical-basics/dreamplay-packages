@@ -1,11 +1,11 @@
 {
-  "name": "@dreamplay/analytics",
+  "name": "@dreamplay/emailer",
   "version": "0.1.0",
   "private": true,
-  "description": "Business-isolated analytics tracker and shared analytics helpers for DreamPlay repos.",
+  "description": "Installable DreamPlay email engine helpers for business apps.",
   "type": "module",
   "sideEffects": false,
-  "files": ["dist", "scripts", "supabase", "README.md"],
+  "files": ["dist", "README.md"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -15,29 +15,29 @@
       "types": "./dist/client.d.ts",
       "import": "./dist/client.js"
     },
-    "./classification": {
-      "types": "./dist/classification.d.ts",
-      "import": "./dist/classification.js"
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./agent-server": {
+      "types": "./dist/agent-server.d.ts",
+      "import": "./dist/agent-server.js"
     },
     "./dashboard": {
       "types": "./dist/dashboard.d.ts",
       "import": "./dist/dashboard.js"
     },
-    "./dashboard-server": {
-      "types": "./dist/dashboard-server.d.ts",
-      "import": "./dist/dashboard-server.js"
-    },
     "./schema": {
       "types": "./dist/schema.d.ts",
       "import": "./dist/schema.js"
     },
-    "./server": {
-      "types": "./dist/server.d.ts",
-      "import": "./dist/server.js"
+    "./send-server": {
+      "types": "./dist/send-server.d.ts",
+      "import": "./dist/send-server.js"
     },
-    "./track-server": {
-      "types": "./dist/track-server.d.ts",
-      "import": "./dist/track-server.js"
+    "./tracking-server": {
+      "types": "./dist/tracking-server.d.ts",
+      "import": "./dist/tracking-server.js"
     },
     "./package.json": "./package.json"
   },
@@ -47,13 +47,15 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.95.2",
-    "lucide-react": "^1.14.0"
+    "resend": "^6.6.0",
+    "zod": "3.25.76"
   },
   "peerDependencies": {
     "react": ">=18 <20",
     "react-dom": ">=18 <20"
   },
   "devDependencies": {
+    "@types/node": "^22.19.1",
     "@types/react": "^19.2.14",
     "typescript": "^5.9.3"
   }
