@@ -243,7 +243,14 @@ export function classifyVisit(
 
   if (
     normalized.some((event) =>
-      [event.sessionId, event.anonymousId, asString(event.metadata?.sid)]
+      [
+        event.sessionId,
+        event.anonymousId,
+        event.sid,
+        event.cid,
+        asString(event.metadata?.sid),
+        asString(event.metadata?.cid),
+      ]
         .filter((value): value is string => Boolean(value))
         .some((value) => SYNTHETIC_TEST_ID_PATTERN.test(value))
     )

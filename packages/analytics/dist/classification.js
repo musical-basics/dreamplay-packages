@@ -128,7 +128,14 @@ export function classifyVisit(events, options = {}) {
         reasons.add("known_bot_user_agent");
         scannerScore += 3;
     }
-    if (normalized.some((event) => [event.sessionId, event.anonymousId, asString(event.metadata?.sid)]
+    if (normalized.some((event) => [
+        event.sessionId,
+        event.anonymousId,
+        event.sid,
+        event.cid,
+        asString(event.metadata?.sid),
+        asString(event.metadata?.cid),
+    ]
         .filter((value) => Boolean(value))
         .some((value) => SYNTHETIC_TEST_ID_PATTERN.test(value)))) {
         reasons.add("synthetic_test_session");
