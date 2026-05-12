@@ -69,7 +69,7 @@ export async function getAnalyticsDashboardData(options, params = {}) {
     const filteredLogs = filterLogs(logs, options, merged.excludeAdmin, merged.excludeBots);
     const pageviews = filteredLogs.filter((log) => log.event_name === "pageview");
     const visitorStats = await buildVisitorStats(supabase, options, filteredLogs);
-    const chartData = buildChartData(filteredLogs, merged.range);
+    const chartData = buildChartData(filteredLogs, merged.range, merged.tz);
     return {
         liveUsers: countLiveUsers(filteredLogs),
         totalPageviews: pageviews.length,
@@ -229,6 +229,7 @@ function parseDashboardQuery(request) {
         excludeAdmin: searchParams.get("exclude_admin") !== "false",
         excludeBots: (searchParams.get("exclude_bots") ?? searchParams.get("excludeBots")) !== "false",
         visitorLimit,
+        tz: normalizeTimeZone(searchParams.get("tz")),
     };
 }
 function withDefaultParams(params) {
@@ -237,7 +238,20 @@ function withDefaultParams(params) {
         excludeAdmin: params.excludeAdmin ?? true,
         excludeBots: params.excludeBots ?? true,
         visitorLimit: params.visitorLimit ?? 1000,
+        tz: normalizeTimeZone(params.tz),
     };
+}
+function normalizeTimeZone(input) {
+    if (!input)
+        return undefined;
+    try {
+        // Throws RangeError if the IANA name is unknown; rejects garbage from clients.
+        new Intl.DateTimeFormat([], { timeZone: input });
+        return input;
+    }
+    catch {
+        return undefined;
+    }
 }
 function parseRange(value) {
     if (value === "24h" || value === "7d" || value === "30d" || value === "all")
@@ -296,11 +310,11 @@ function countLiveUsers(logs) {
     const threshold = Date.now() - 5 * 60 * 1000;
     return uniqueVisitorIds(logs.filter((log) => new Date(log.created_at).getTime() >= threshold)).size;
 }
-function buildChartData(logs, range) {
+function buildChartData(logs, range, tz) {
     const buckets = new Map();
     const ordered = [...logs].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
     for (const log of ordered) {
-        const name = bucketName(log.created_at, range);
+        const name = bucketName(log.created_at, range, tz);
         const bucket = buckets.get(name) ?? [];
         bucket.push(log);
         buckets.set(name, bucket);
@@ -317,12 +331,12 @@ function buildChartData(logs, range) {
         };
     });
 }
-function bucketName(value, range) {
+function bucketName(value, range, tz) {
     const date = new Date(value);
     if (range === "24h") {
-        return date.toLocaleTimeString([], { hour: "numeric" });
+        return date.toLocaleTimeString([], { hour: "numeric", timeZone: tz });
     }
-    return date.toLocaleDateString([], { month: "short", day: "numeric" });
+    return date.toLocaleDateString([], { month: "short", day: "numeric", timeZone: tz });
 }
 function buildAbResults(logs) {
     const variants = new Map();

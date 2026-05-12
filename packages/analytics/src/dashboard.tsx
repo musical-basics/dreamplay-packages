@@ -96,8 +96,9 @@ export function AnalyticsDashboard({
       if (typeof document !== "undefined" && document.hidden) return;
       try {
         setError(null);
+        const tz = browserTimeZone();
         const json = await fetchJson<AnalyticsDashboardData>(
-          `${apiBasePath}/stats?range=${range}&exclude_admin=${filterAdmin}&exclude_bots=${filterBots}&visitor_limit=3000&_t=${Date.now()}`
+          `${apiBasePath}/stats?range=${range}&exclude_admin=${filterAdmin}&exclude_bots=${filterBots}&visitor_limit=3000${tz ? `&tz=${encodeURIComponent(tz)}` : ""}&_t=${Date.now()}`
         );
         if (!cancelled) setData(json);
       } catch (caught) {
@@ -126,8 +127,9 @@ export function AnalyticsDashboard({
     async function fetchEmailVisitors() {
       setEmailLoading(true);
       try {
+        const tz = browserTimeZone();
         const json = await fetchJson<AnalyticsEmailVisitorData>(
-          `${apiBasePath}/email-visitors?exclude_admin=${filterAdmin}&exclude_bots=${filterBots}&limit=3000&_t=${Date.now()}`
+          `${apiBasePath}/email-visitors?exclude_admin=${filterAdmin}&exclude_bots=${filterBots}&limit=3000${tz ? `&tz=${encodeURIComponent(tz)}` : ""}&_t=${Date.now()}`
         );
         if (!cancelled) setEmailData(json.emailVisitorStats);
       } catch {
@@ -161,8 +163,9 @@ export function AnalyticsDashboard({
         const query = visitor.visitorKey
           ? `visitor_key=${encodeURIComponent(visitor.visitorKey)}`
           : `ip=${encodeURIComponent(visitor.ip)}`;
+        const tz = browserTimeZone();
         const json = await fetchJson<AnalyticsVisitorHistory>(
-          `${apiBasePath}/visitor-history?${query}&range=${range}&exclude_admin=${filterAdmin}&exclude_bots=${filterBots}&_t=${Date.now()}`
+          `${apiBasePath}/visitor-history?${query}&range=${range}&exclude_admin=${filterAdmin}&exclude_bots=${filterBots}${tz ? `&tz=${encodeURIComponent(tz)}` : ""}&_t=${Date.now()}`
         );
         if (!cancelled) setVisitorHistory(json);
       } catch {
@@ -651,6 +654,15 @@ async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { cache: "no-store" });
   if (!response.ok) throw new Error(`Request failed: ${response.status}`);
   return response.json() as Promise<T>;
+}
+
+function browserTimeZone(): string | undefined {
+  if (typeof Intl === "undefined") return undefined;
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function formatDuration(seconds: number | null): string {

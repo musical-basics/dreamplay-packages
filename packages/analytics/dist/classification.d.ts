@@ -1,6 +1,6 @@
 import { type AnalyticsEventName } from "./schema.js";
 export type VisitClassification = "human_confirmed" | "human_likely" | "scanner_likely" | "bot_likely" | "unknown";
-export type VisitClassificationReason = "email_attribution_present" | "known_bot_user_agent" | "known_security_scanner_user_agent" | "literal_ampersand_query" | "multiple_email_links_same_second" | "cross_domain_email_links" | "rapid_pageview_burst" | "mostly_zero_duration_pages" | "only_passive_events" | "checkout_or_purchase_event" | "lead_or_form_event" | "human_interaction_event" | "meaningful_time_on_page" | "realistic_multi_page_timing";
+export type VisitClassificationReason = "email_attribution_present" | "known_bot_user_agent" | "known_security_scanner_user_agent" | "synthetic_test_session" | "literal_ampersand_query" | "multiple_email_links_same_second" | "cross_domain_email_links" | "rapid_pageview_burst" | "mostly_zero_duration_pages" | "only_passive_events" | "checkout_or_purchase_event" | "lead_or_form_event" | "human_interaction_event" | "meaningful_time_on_page" | "realistic_multi_page_timing";
 export type VisitClassificationEvent = {
     event_name?: AnalyticsEventName | string | null;
     eventName?: AnalyticsEventName | string | null;
@@ -25,6 +25,8 @@ export type NormalizedVisitEvent = {
     cid?: string;
     durationSeconds?: number;
     userAgent?: string;
+    sessionId?: string;
+    anonymousId?: string;
     metadata: Record<string, unknown>;
 };
 export type VisitClassificationOptions = {
@@ -63,6 +65,7 @@ export declare const VISIT_CLASSIFICATION_REASON_LABELS: {
     readonly email_attribution_present: "URL/session contains email attribution";
     readonly known_bot_user_agent: "User agent looks like automation";
     readonly known_security_scanner_user_agent: "User agent looks like a security scanner";
+    readonly synthetic_test_session: "Session/anonymous id matches a synthetic test pattern";
     readonly literal_ampersand_query: "URL contains literal &amp; query separators";
     readonly multiple_email_links_same_second: "Multiple email links landed in the same second";
     readonly cross_domain_email_links: "Email-attributed links landed across multiple domains";

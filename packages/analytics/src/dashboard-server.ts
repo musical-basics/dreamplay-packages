@@ -38,6 +38,7 @@ type QueryParams = {
   excludeAdmin: boolean;
   excludeBots: boolean;
   visitorLimit: number;
+  tz?: string;
 };
 
 const NO_CACHE_HEADERS = {
@@ -118,7 +119,7 @@ export async function getAnalyticsDashboardData(
   const filteredLogs = filterLogs(logs, options, merged.excludeAdmin, merged.excludeBots);
   const pageviews = filteredLogs.filter((log) => log.event_name === "pageview");
   const visitorStats = await buildVisitorStats(supabase, options, filteredLogs);
-  const chartData = buildChartData(filteredLogs, merged.range);
+  const chartData = buildChartData(filteredLogs, merged.range, merged.tz);
 
   return {
     liveUsers: countLiveUsers(filteredLogs),
@@ -337,6 +338,7 @@ function parseDashboardQuery(request: Request): QueryParams {
     excludeBots:
       (searchParams.get("exclude_bots") ?? searchParams.get("excludeBots")) !== "false",
     visitorLimit,
+    tz: normalizeTimeZone(searchParams.get("tz")),
   };
 }
 
@@ -346,7 +348,19 @@ function withDefaultParams(params: Partial<QueryParams>): QueryParams {
     excludeAdmin: params.excludeAdmin ?? true,
     excludeBots: params.excludeBots ?? true,
     visitorLimit: params.visitorLimit ?? 1000,
+    tz: normalizeTimeZone(params.tz),
   };
+}
+
+function normalizeTimeZone(input: string | null | undefined): string | undefined {
+  if (!input) return undefined;
+  try {
+    // Throws RangeError if the IANA name is unknown; rejects garbage from clients.
+    new Intl.DateTimeFormat([], { timeZone: input });
+    return input;
+  } catch {
+    return undefined;
+  }
 }
 
 function parseRange(value: string | null): AnalyticsDashboardRange {
@@ -414,13 +428,17 @@ function countLiveUsers(logs: AnalyticsEventRow[]): number {
   return uniqueVisitorIds(logs.filter((log) => new Date(log.created_at).getTime() >= threshold)).size;
 }
 
-function buildChartData(logs: AnalyticsEventRow[], range: AnalyticsDashboardRange): AnalyticsChartPoint[] {
+function buildChartData(
+  logs: AnalyticsEventRow[],
+  range: AnalyticsDashboardRange,
+  tz?: string
+): AnalyticsChartPoint[] {
   const buckets = new Map<string, AnalyticsEventRow[]>();
   const ordered = [...logs].sort(
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
   for (const log of ordered) {
-    const name = bucketName(log.created_at, range);
+    const name = bucketName(log.created_at, range, tz);
     const bucket = buckets.get(name) ?? [];
     bucket.push(log);
     buckets.set(name, bucket);
@@ -438,12 +456,12 @@ function buildChartData(logs: AnalyticsEventRow[], range: AnalyticsDashboardRang
   });
 }
 
-function bucketName(value: string, range: AnalyticsDashboardRange): string {
+function bucketName(value: string, range: AnalyticsDashboardRange, tz?: string): string {
   const date = new Date(value);
   if (range === "24h") {
-    return date.toLocaleTimeString([], { hour: "numeric" });
+    return date.toLocaleTimeString([], { hour: "numeric", timeZone: tz });
   }
-  return date.toLocaleDateString([], { month: "short", day: "numeric" });
+  return date.toLocaleDateString([], { month: "short", day: "numeric", timeZone: tz });
 }
 
 function buildAbResults(logs: AnalyticsEventRow[]) {

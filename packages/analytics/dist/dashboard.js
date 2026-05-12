@@ -41,7 +41,8 @@ export function AnalyticsDashboard({ title = "Analytics", accentLabel = "DreamPl
                 return;
             try {
                 setError(null);
-                const json = await fetchJson(`${apiBasePath}/stats?range=${range}&exclude_admin=${filterAdmin}&exclude_bots=${filterBots}&visitor_limit=3000&_t=${Date.now()}`);
+                const tz = browserTimeZone();
+                const json = await fetchJson(`${apiBasePath}/stats?range=${range}&exclude_admin=${filterAdmin}&exclude_bots=${filterBots}&visitor_limit=3000${tz ? `&tz=${encodeURIComponent(tz)}` : ""}&_t=${Date.now()}`);
                 if (!cancelled)
                     setData(json);
             }
@@ -74,7 +75,8 @@ export function AnalyticsDashboard({ title = "Analytics", accentLabel = "DreamPl
         async function fetchEmailVisitors() {
             setEmailLoading(true);
             try {
-                const json = await fetchJson(`${apiBasePath}/email-visitors?exclude_admin=${filterAdmin}&exclude_bots=${filterBots}&limit=3000&_t=${Date.now()}`);
+                const tz = browserTimeZone();
+                const json = await fetchJson(`${apiBasePath}/email-visitors?exclude_admin=${filterAdmin}&exclude_bots=${filterBots}&limit=3000${tz ? `&tz=${encodeURIComponent(tz)}` : ""}&_t=${Date.now()}`);
                 if (!cancelled)
                     setEmailData(json.emailVisitorStats);
             }
@@ -106,7 +108,8 @@ export function AnalyticsDashboard({ title = "Analytics", accentLabel = "DreamPl
                 const query = visitor.visitorKey
                     ? `visitor_key=${encodeURIComponent(visitor.visitorKey)}`
                     : `ip=${encodeURIComponent(visitor.ip)}`;
-                const json = await fetchJson(`${apiBasePath}/visitor-history?${query}&range=${range}&exclude_admin=${filterAdmin}&exclude_bots=${filterBots}&_t=${Date.now()}`);
+                const tz = browserTimeZone();
+                const json = await fetchJson(`${apiBasePath}/visitor-history?${query}&range=${range}&exclude_admin=${filterAdmin}&exclude_bots=${filterBots}${tz ? `&tz=${encodeURIComponent(tz)}` : ""}&_t=${Date.now()}`);
                 if (!cancelled)
                     setVisitorHistory(json);
             }
@@ -206,6 +209,16 @@ async function fetchJson(url) {
     if (!response.ok)
         throw new Error(`Request failed: ${response.status}`);
     return response.json();
+}
+function browserTimeZone() {
+    if (typeof Intl === "undefined")
+        return undefined;
+    try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+    }
+    catch {
+        return undefined;
+    }
 }
 function formatDuration(seconds) {
     if (seconds === null)

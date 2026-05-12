@@ -39,10 +39,12 @@ const DEFAULT_CONFIRMED_HUMAN_EVENT_NAMES = [
 ];
 const BOT_USER_AGENT_PATTERN = /bot|spider|crawl|headless|lighthouse|pingdom|curl|wget|python-requests|axios|node-fetch|go-http-client|java\/|php|ruby|selenium|playwright|puppeteer/i;
 const SECURITY_SCANNER_USER_AGENT_PATTERN = /proofpoint|mimecast|barracuda|trustwave|urlscan|phishtank|phish|security|sandbox|safelinks|safe-links|defender|office365|microsoft exchange|symantec|forcepoint|checkpoint|trend micro|zscaler|cloudmark|area 1|ironscales|inky|perception point/i;
+const SYNTHETIC_TEST_ID_PATTERN = /^(test|verify|prod-verify|smoke|smoketest|qa|fixture|local|sample|dev)([-_]|$)/i;
 export const VISIT_CLASSIFICATION_REASON_LABELS = {
     email_attribution_present: "URL/session contains email attribution",
     known_bot_user_agent: "User agent looks like automation",
     known_security_scanner_user_agent: "User agent looks like a security scanner",
+    synthetic_test_session: "Session/anonymous id matches a synthetic test pattern",
     literal_ampersand_query: "URL contains literal &amp; query separators",
     multiple_email_links_same_second: "Multiple email links landed in the same second",
     cross_domain_email_links: "Email-attributed links landed across multiple domains",
@@ -81,6 +83,8 @@ export function normalizeVisitEvents(events) {
             cid: asString(metadata.cid) ?? queryAttribution.cid,
             durationSeconds,
             userAgent,
+            sessionId: asString(event.session_id) ?? asString(event.sessionId) ?? undefined,
+            anonymousId: asString(event.anonymous_id) ?? asString(event.anonymousId) ?? undefined,
             metadata,
         };
     });
@@ -123,6 +127,12 @@ export function classifyVisit(events, options = {}) {
     else if (userAgents.some((userAgent) => BOT_USER_AGENT_PATTERN.test(userAgent))) {
         reasons.add("known_bot_user_agent");
         scannerScore += 3;
+    }
+    if (normalized.some((event) => [event.sessionId, event.anonymousId, asString(event.metadata?.sid)]
+        .filter((value) => Boolean(value))
+        .some((value) => SYNTHETIC_TEST_ID_PATTERN.test(value)))) {
+        reasons.add("synthetic_test_session");
+        scannerScore += 4;
     }
     if (normalized.some((event) => hasLiteralAmpersandQuery(event.path))) {
         reasons.add("literal_ampersand_query");
@@ -181,7 +191,8 @@ export function classifyVisit(events, options = {}) {
     const hasConfirmedHumanEvent = eventNames.some((eventName) => confirmedHumanEventNames.has(eventName));
     const humanConfirmed = hasConfirmedHumanEvent || hasCheckoutOrPurchase || hasLeadOrForm;
     const humanLikely = humanConfirmed || humanScore >= 2;
-    const botLikely = reasons.has("known_bot_user_agent") && !humanConfirmed;
+    const botLikely = (reasons.has("known_bot_user_agent") || reasons.has("synthetic_test_session")) &&
+        !humanConfirmed;
     const scannerLikely = scannerScore >= 3 || (scannerScore >= 2 && humanScore === 0);
     const classification = chooseClassification({
         botLikely,

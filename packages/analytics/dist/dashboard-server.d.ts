@@ -17,6 +17,7 @@ type QueryParams = {
     excludeAdmin: boolean;
     excludeBots: boolean;
     visitorLimit: number;
+    tz?: string;
 };
 export declare function createAnalyticsDashboardStatsHandler(options: AnalyticsDashboardServerOptions): (request: Request) => Promise<Response>;
 export declare function createAnalyticsDashboardVisitorHistoryHandler(options: AnalyticsDashboardServerOptions): (request: Request) => Promise<Response>;
