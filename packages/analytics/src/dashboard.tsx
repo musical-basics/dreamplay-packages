@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   ArrowLeft,
@@ -620,20 +620,56 @@ function DeviceBadge({ device }: { device: AnalyticsVisitorSummary["device"] }) 
 function MiniChart({ data, metric }: { data: AnalyticsDashboardData["chartData"]; metric: MetricType }) {
   const width = 900;
   const height = 260;
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
   const values = data.map((point) => Number(point[metric]) || 0);
   const max = Math.max(...values, 1);
-  const points = values.map((value, index) => {
+  const positions = values.map((value, index) => {
     const x = data.length <= 1 ? 0 : (index / (data.length - 1)) * width;
     const y = height - (value / max) * (height - 20) - 10;
-    return `${x},${y}`;
+    return { x, y };
   });
-  const area = points.length > 0
-    ? `0,${height} ${points.join(" ")} ${width},${height}`
+  const polyPoints = positions.map((p) => `${p.x},${p.y}`).join(" ");
+  const area = positions.length > 0
+    ? `0,${height} ${polyPoints} ${width},${height}`
     : "";
 
+  function handleMouseMove(event: React.MouseEvent<SVGSVGElement>) {
+    if (!svgRef.current || data.length === 0) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const xInSvg = ((event.clientX - rect.left) / rect.width) * width;
+    let nearest = 0;
+    let nearestDist = Infinity;
+    for (let i = 0; i < positions.length; i++) {
+      const d = Math.abs(positions[i].x - xInSvg);
+      if (d < nearestDist) {
+        nearest = i;
+        nearestDist = d;
+      }
+    }
+    setHoverIndex(nearest);
+  }
+
+  const hovered = hoverIndex !== null ? data[hoverIndex] : null;
+  const hoveredPos = hoverIndex !== null ? positions[hoverIndex] : null;
+  const metricLabel: Record<MetricType, string> = {
+    pageviews: "pageviews",
+    visitors: "visitors",
+    unique_pages: "unique pages",
+    avg_per_user: "pages/user",
+  };
+
   return (
-    <div className="dpa-chart">
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Analytics trend chart">
+    <div className="dpa-chart" style={{ position: "relative" }}>
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Analytics trend chart"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setHoverIndex(null)}
+      >
         <defs>
           <linearGradient id="dpaChartFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.35" />
@@ -641,8 +677,42 @@ function MiniChart({ data, metric }: { data: AnalyticsDashboardData["chartData"]
           </linearGradient>
         </defs>
         <polygon points={area} fill="url(#dpaChartFill)" />
-        <polyline points={points.join(" ")} fill="none" stroke="#3b82f6" strokeWidth="3" />
+        <polyline points={polyPoints} fill="none" stroke="#3b82f6" strokeWidth="3" />
+        {hoveredPos && (
+          <>
+            <line
+              x1={hoveredPos.x}
+              x2={hoveredPos.x}
+              y1={0}
+              y2={height}
+              stroke="rgba(255,255,255,0.2)"
+              strokeWidth={1}
+              strokeDasharray="4 4"
+            />
+            <circle cx={hoveredPos.x} cy={hoveredPos.y} r={6} fill="#3b82f6" stroke="#fff" strokeWidth={2} />
+          </>
+        )}
       </svg>
+      {hovered && hoveredPos && (
+        <div
+          className="dpa-chart-tooltip"
+          style={{
+            position: "absolute",
+            left: `${(hoveredPos.x / width) * 100}%`,
+            top: `${(hoveredPos.y / height) * (280 / height) * 100}%`,
+            transform: "translate(-50%, calc(-100% - 12px))",
+            pointerEvents: "none",
+          }}
+        >
+          <div className="dpa-chart-tooltip-title">{hovered.name}</div>
+          <div className="dpa-chart-tooltip-row">{hovered.visitors.toLocaleString()} visitors</div>
+          <div className="dpa-chart-tooltip-row">{hovered.pageviews.toLocaleString()} pageviews</div>
+          <div className="dpa-chart-tooltip-row">{hovered.unique_pages.toLocaleString()} unique pages</div>
+          <div className="dpa-chart-tooltip-row dpa-chart-tooltip-active">
+            {hovered[metric].toLocaleString()} {metricLabel[metric]}
+          </div>
+        </div>
+      )}
       <div className="dpa-chart-labels">
         {data.map((point) => <span key={point.name}>{point.name}</span>)}
       </div>
@@ -677,7 +747,21 @@ function formatDuration(seconds: number | null): string {
 
 function formatDate(value: string | null | undefined): string {
   if (!value) return "-";
-  return new Date(value).toLocaleString();
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  try {
+    return new Intl.DateTimeFormat([], {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      timeZoneName: "short",
+    }).format(date);
+  } catch {
+    return date.toLocaleString();
+  }
 }
 
 function formatLocation(city?: string | null, region?: string | null, country?: string | null): string {
@@ -717,8 +801,12 @@ const DASHBOARD_CSS = `
 .dpa-panel-flush{padding:0;overflow:hidden}
 .dpa-panel-title{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;margin-bottom:18px;color:#e5e5e5}
 .dpa-chart{height:330px}
-.dpa-chart svg{width:100%;height:280px;display:block;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0));border-radius:10px}
+.dpa-chart svg{width:100%;height:280px;display:block;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0));border-radius:10px;cursor:crosshair}
 .dpa-chart-labels{display:flex;justify-content:space-between;color:#737373;font-size:12px;margin-top:8px;overflow:hidden}
+.dpa-chart-tooltip{background:rgba(15,15,15,.96);border:1px solid #404040;border-radius:8px;padding:10px 12px;color:#e5e5e5;font-size:12px;line-height:1.5;min-width:140px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:10;white-space:nowrap}
+.dpa-chart-tooltip-title{font-weight:700;color:#fff;font-size:13px;margin-bottom:4px;letter-spacing:.02em}
+.dpa-chart-tooltip-row{color:#a3a3a3}
+.dpa-chart-tooltip-active{color:#60a5fa;font-weight:600;margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,.08)}
 .dpa-table-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #404040;background:rgba(38,38,38,.85)}
 .dpa-table-header h2{display:flex;align-items:center;gap:10px;font-size:16px;margin:0;color:#e5e5e5}
 .dpa-table-header span{font-size:12px;color:#737373}
