@@ -170,6 +170,7 @@ async function buildVisitorStats(supabase, options, logs) {
             (newest.ip_address ? ipEmailMap.get(newest.ip_address) : undefined);
         const sid = firstMetadataString(visitorLogs, "sid");
         const cid = firstMetadataString(visitorLogs, "cid");
+        const variant = firstMetadataString(visitorLogs, "ab_variant");
         return {
             visitorKey,
             ip: newest.ip_address ?? "unknown",
@@ -183,6 +184,7 @@ async function buildVisitorStats(supabase, options, logs) {
             email,
             sid,
             cid,
+            variant,
             source: oldestSource ? sourceForLog(oldestSource) : undefined,
             sourceUrl: sourceUrlForLog(oldestSource),
             totalTimeSeconds: totalDurationSeconds(visitorLogs),

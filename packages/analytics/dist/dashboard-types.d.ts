@@ -38,6 +38,7 @@ export type AnalyticsVisitorSummary = {
     cid?: string;
     source?: string;
     sourceUrl?: string;
+    variant?: string;
     totalTimeSeconds: number;
     journey_id?: string;
     classification?: VisitClassificationResult;

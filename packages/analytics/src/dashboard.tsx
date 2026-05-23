@@ -449,6 +449,7 @@ function VisitorsTab({
               <th>Last Seen</th>
               <th>{emailMode ? "Email / Attribution" : "Visitor"}</th>
               <th>Classification</th>
+              <th>Variant</th>
               <th>Source</th>
               <th>Country</th>
               <th>Device</th>
@@ -468,6 +469,7 @@ function VisitorsTab({
                   </div>
                 </td>
                 <td><ClassificationBadge result={visitor.classification} /></td>
+                <td>{visitor.variant ? <span className="dpa-class">{visitor.variant.toUpperCase()}</span> : <span className="dpa-muted">-</span>}</td>
                 <td>{visitor.source ? <span className="dpa-source">{visitor.source}</span> : <span className="dpa-muted">-</span>}</td>
                 <td><span className="dpa-country"><Globe size={12} /> {visitor.country}</span></td>
                 <td><DeviceBadge device={visitor.device} /></td>
@@ -477,7 +479,7 @@ function VisitorsTab({
               </tr>
             ))}
             {visitors.length === 0 && (
-              <tr><td colSpan={9} className="dpa-empty-cell">No visitor data available.</td></tr>
+              <tr><td colSpan={10} className="dpa-empty-cell">No visitor data available.</td></tr>
             )}
           </tbody>
         </table>
