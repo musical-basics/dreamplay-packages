@@ -424,7 +424,7 @@ function VisitorsTab({
                 title="Location"
                 value={formatLocation(history.geo?.city, history.geo?.region, history.geo?.country)}
               />
-              <DetailCard title="Source" value={selectedVisitor.source ?? "Direct"} />
+              <DetailCard title="Source" value={<CopyableSource source={selectedVisitor.source ?? "Direct"} />} />
               <DetailCard title="Journey" value={selectedVisitor.journey_id ?? "-"} />
             </div>
             <VisitHistoryTable visits={history.visits} />
@@ -470,7 +470,7 @@ function VisitorsTab({
                 </td>
                 <td><ClassificationBadge result={visitor.classification} /></td>
                 <td>{visitor.variant ? <span className="dpa-class">{visitor.variant.toUpperCase()}</span> : <span className="dpa-muted">-</span>}</td>
-                <td>{visitor.source ? <span className="dpa-source">{visitor.source}</span> : <span className="dpa-muted">-</span>}</td>
+                <td><CopyableSource source={visitor.source ?? "Direct"} /></td>
                 <td><span className="dpa-country"><Globe size={12} /> {visitor.country}</span></td>
                 <td><DeviceBadge device={visitor.device} /></td>
                 <td><span className="dpa-count">{visitor.count}</span></td>
@@ -485,6 +485,41 @@ function VisitorsTab({
         </table>
       </div>
     </section>
+  );
+}
+
+function CopyableSource({ source }: { source: string }) {
+  const [copied, setCopied] = useState(false);
+
+  if (!source || source === "Direct" || source === "-") {
+    return <span className="dpa-muted">{source ?? "-"}</span>;
+  }
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(source);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1000);
+  };
+
+  return (
+    <span
+      className="dpa-source"
+      style={{
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+        transition: "all 0.2s ease",
+        ...(copied ? {
+          background: "rgba(34, 197, 94, 0.2)",
+          borderColor: "rgba(34, 197, 94, 0.4)",
+          color: "#4ade80",
+        } : {})
+      }}
+      title={`${source}\n\nClick to copy full values`}
+      onClick={handleCopy}
+    >
+      {copied ? "COPIED!" : source}
+    </span>
   );
 }
 

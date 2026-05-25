@@ -495,15 +495,31 @@ function firstMetadataString(logs: AnalyticsEventRow[], key: string): string | u
 
 function sourceForLog(log: AnalyticsEventRow | undefined): string | undefined {
   if (!log?.metadata) return undefined;
-  const utmSource = asString(log.metadata.utm_source);
-  if (utmSource) {
-    const parts = [`utm_source=${utmSource}`];
-    const medium = asString(log.metadata.utm_medium);
-    const campaign = asString(log.metadata.utm_campaign);
-    if (medium) parts.push(`utm_medium=${medium}`);
-    if (campaign) parts.push(`utm_campaign=${campaign}`);
+  
+  const trackingKeys = [
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_content",
+    "utm_term",
+    "gclid",
+    "gad_campaignid",
+    "gad_adgroupid",
+    "gad_creative"
+  ];
+  
+  const parts: string[] = [];
+  for (const key of trackingKeys) {
+    const val = asString(log.metadata[key]);
+    if (val) {
+      parts.push(`${key}=${val}`);
+    }
+  }
+  
+  if (parts.length > 0) {
     return parts.join("&");
   }
+  
   const referrer = asString(log.metadata.referrer);
   if (!referrer) return undefined;
   try {

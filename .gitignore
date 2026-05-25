@@ -7,3 +7,5 @@ packages/*/dist
 !packages/emailer/dist/**
 .DS_Store
 *.tsbuildinfo
+_backup_files
+_backup_files/
